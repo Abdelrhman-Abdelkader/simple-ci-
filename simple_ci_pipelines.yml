@@ -1,3 +1,49 @@
+trigger:
+- main
+
+pr:
+- main
+
+pool:
+  name: my
+
+steps:
+- checkout: self
+
+- script: |
+    set -e
+    echo "Python version:"
+    python3 --version
+    echo "Pip version:"
+    pip3 --version
+  displayName: "Check Python & Pip"
+
+- script: |
+    set -e
+    python3 -m venv .venv
+    . .venv/bin/activate
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: "Create venv + install dependencies"
+
+- script: |
+    set -e
+    . .venv/bin/activate
+    pytest -q --junitxml=test-results.xml
+  displayName: "Run tests (pytest)"
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'test-results.xml'
+    failTaskOnFailedTests: true
+  condition: succeededOrFailed()
+  displayName: "Publish test results"
+
+
+
+
+
 # Starter pipeline
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
@@ -18,36 +64,40 @@
 #     echo See https://aka.ms/yaml
 #   displayName: 'Run a multi-line script'
 
-trigger:
-- main
+# trigger:
+# - main
 
-pr:
-- main
+# pr:
+# - main
 
-pool:
-  name: my
+# pool:
+#   name: my
 
-steps:
-- checkout: self
+# steps:
+# - checkout: self
 
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.11'
-  displayName: "Use Python 3.11"
+# - task: UsePythonVersion@0
+#   inputs:
+#     versionSpec: '3.11'
+#   displayName: "Use Python 3.11"
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: "Install dependencies"
+# - script: |
+#     python -m pip install --upgrade pip
+#     pip install -r requirements.txt
+#   displayName: "Install dependencies"
 
-- script: |
-    pytest -q --junitxml=test-results.xml
-  displayName: "Run tests"
+# - script: |
+#     pytest -q --junitxml=test-results.xml
+#   displayName: "Run tests"
 
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: 'test-results.xml'
-    failTaskOnFailedTests: true
-  condition: succeededOrFailed()
-  displayName: "Publish test results"
+# - task: PublishTestResults@2
+#   inputs:
+#     testResultsFormat: 'JUnit'
+#     testResultsFiles: 'test-results.xml'
+#     failTaskOnFailedTests: true
+#   condition: succeededOrFailed()
+#   displayName: "Publish test results"
+
+
+
+  
